@@ -1,0 +1,44 @@
+1.	The main function validates the command-line arguments using a third party library, Apache CLI and then passes the path of the Cranfield and stopwords file  .
+2.	The parse function is then invoked with this path and then following actions are performed:-
+a.	Each entry in that path is traversed
+b.	If the entry is a directory, the parse methodis called recursively on the entries of that directory
+c.	If the entry is a file, step 3 is executed
+3.	The parse method calls the readFile method which performs the following actions:-
+a.	Creates an object of the MainClass
+b.	Passes this object to the tokenize method which reads each text one line at a time
+c.	A line of text is read and the transformText method is called which handles and transforms this text as:-
+i.	All the SGML tags are replaced by a space
+ii.	All the digits in the text are removed
+iii.	All the special characters are removed.
+iv.	If the word is of abbreviated form (ex: U.S.A), the dots are removed (USA)
+v.	If the word is of possession form (ex: University’s), the possessives is removed (University).
+vi.	If the word contains only ‘ such as in the case of their’middle’class then the ‘ is replaced by space and taken as different words
+vii.	All the hyphens are replaced by space and the word is treated as two separate words
+viii.	All the multiple consecutive spaces are replaced by a single space
+ix.	The text is converted to lower case
+d.	After the text is transformed, the line is split into words by using space as delimiter
+e.	Each word is lemmatized using the Stanford Lemmatizer 
+f.	Each word is stemmed using the Porter Stemmer
+g.	Index is created by using the lemma and stemmed words.
+4.	The MainClass object is passed to the Dictionary class where the uncompressed index is created as
+a.	The stems are stored in a separate dictionary object with document frequency and a reference to the Properties class which represents the structure of the posting file
+b.	The same is repeated for the lemmas
+5.	Step 2 to 4 are executed until all the files are processed. 
+6.	After step4 displayIndexResults method function is called, which performs the following actions
+a.	Writes the uncompressed indexes to files
+b.	Time taken to create those files
+c.	Reports the sizes of those files and number of inverted indexes
+7.	After step is executed, we have two files for each uncompressed index. Then the blockcompression method is called for Index 1 to apply block compression for dictionary and gamma encoding for postings file. Similarly, the frontcoding method is called for Index 2 to apply front coding compression and delta encoding for postings file. After the indexes are compressed, 4 files are generated – 2 for each index (1 compressed file for dictionary and another for postings)
+a.	The Index 1 is compressed as follows:
+i.	For the dictionary, each word is kept in a buffer and a count is incremented. When the count is k=8, the buffer is flushed out to a file appended with its length and the count is set to 0.
+ii.	If count is not 8, buffers is appended by the current dictionary term
+iii.	For the postings file, gamma code is calculated for the each of the 4 integers – tf, df, max_tf and doclen and it is converted into bytes and written into a separate file.
+b.	The Index 2 is compressed as follows: -
+i.	For the dictionary, all the words are sorted and then minimum length for the words is obtained. This minimum length is the length of the prefix and then each term is trimmed by this prefix and appended to the front code. 
+ii.	This front code is then written to a file.
+iii.	For the postings file, delta code is calculated for the each of the 4 integers – tf, df, max_tf and doclen and it is converted into bytes and written into a separate file.
+8.	After the above step we have 4 compressed files, and the program reports the size of each by adding up sizes of dictionary and postings compressed files for each index and also the time taken to compress those indexes
+9.	Then the method displayTermCharacteristics method is called to display the df, tf, and inverted list length (in bytes) for the terms: "Reynolds", "NASA", "Prandtl", "flow", "pressure", "boundary", "shock"
+a.	For each term, the inverted list size is calculated as:Sum of (Integer size for each of docID, max_tf, df, doclen)
+10.	Then results for “NASA” displayed along with peak and lowest terms for each index
+11.	Lastly, the documents with largest max_tf and doclen are displayed.
